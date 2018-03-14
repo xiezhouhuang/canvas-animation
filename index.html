@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>canvas实现逐帧动画效果</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+	<style type="text/css">
+		*{
+			padding: 0px;
+			margin: 0px;
+		}
+	</style>
+</head>
+<body>
+<audio src="./gif/1_20180210121729.mp3" id="audio" preload="true"></audio>
+<canvas class="dynaLayer__canvas" width="750" height="1206" id="canvas"></canvas>
+<script type="text/javascript" src="./js/pxloader-images.min.js?t1518234563728"></script>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script> 
+<script type="text/javascript">
+  
+	var imgObj = [];
+    //1.创建要加载的图片
+    var fileList = function() {
+        var imgsArr = [];
+        for (var i = 1; i < 27; i++) {
+            var imgSrc = `./gif/${i}.jpg`;
+            imgsArr.push(imgSrc);
+        }
+        return imgsArr;
+    }
+    var fileList = fileList();
+    // 加载帧图资源
+    loader = new PxLoader();
+    for (var i = 0; i < fileList.length; i++) {
+        imgObj[i] = loader.addImage(fileList[i]);
+    }
+    document.addEventListener("WeixinJSBridgeReady", function () { 
+        
+        loader.start();
+    }, false); 
+    
+    // 加载完成
+    loader.addCompletionListener(function () {
+        document.getElementById('audio').play();//加载图片完成 自动播放音频
+        ani(imgObj, function(timer) {
+            //播放完停留在最后一张 // 
+            clearInterval(timer);
+        });
+    });
+    //5.有了图片和canvas对象，创建动画函数
+    var ani = function(imgsArr, cb) {
+        //图片的宽高
+        var offsetWidth = imgsArr[0].width;
+        var offsetHeight = imgsArr[0].height;
+        var ctx = canvas.getContext('2d');
+        canvas.width = document.documentElement.clientWidth;
+        canvas.height = document.documentElement.clientHeight;
+
+        var n = 0;
+
+        var timer = setInterval(function() {
+
+            //清屏
+           // ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            //绘制图片        
+            ctx.drawImage(
+                imgsArr[n],
+                0, 0, offsetWidth, offsetHeight,
+                0, 0, canvas.width, canvas.height
+            );
+
+            n++;
+
+            //播放到最后一张图片
+            if (n == imgsArr.length) {
+                n = 0;
+                cb && cb(timer);
+            }
+
+        }, 150);
+    }
+</script>
+</body>
+</html>
